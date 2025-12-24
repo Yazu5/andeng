@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Realistic Christmas Night</title>
+    <style>
+        :root {
+            --sky: #050a14;
+            --snow: #eef2f3;
+            --house: #5d4037;
+            --roof: #3e2723;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background: linear-gradient(to bottom, #020408 0%, #0d1d31 70%, #1a2a6c 100%);
+            overflow: hidden; height: 100vh;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* --- Snow Floor --- */
+        .snow-floor {
+            position: absolute;
+            bottom: 0; width: 100%; height: 60px;
+            background: var(--snow);
+            border-top-left-radius: 50% 20px;
+            border-top-right-radius: 50% 20px;
+            z-index: 14;
+            box-shadow: 0 -10px 30px rgba(255,255,255,0.3);
+        }
+
+        /* --- Smoke Animation --- */
+        .chimney {
+            position: absolute;
+            top: -70px; right: 20px;
+            width: 15px; height: 30px;
+            background: var(--roof);
+        }
+
+        .smoke-wrap { position: absolute; top: -40px; left: 5px; }
+
+        .smoke {
+            position: absolute;
+            width: 10px; height: 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: smoke-up 3s infinite linear;
+            opacity: 0;
+        }
+
+        @keyframes smoke-up {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            20% { opacity: 0.6; }
+            100% { transform: translateY(-80px) scale(4); opacity: 0; }
+        }
+
+        /* --- House & Village --- */
+        .village {
+            position: absolute; bottom: 40px;
+            width: 100%; display: flex;
+            justify-content: space-around; align-items: flex-end;
+            z-index: 15;
+        }
+
+        .house {
+            position: relative; width: 130px; height: 110px;
+            background: var(--house);
+            box-shadow: inset -15px 0 20px rgba(0,0,0,0.4);
+        }
+
+        .roof {
+            position: absolute; top: -60px; left: -10px;
+            width: 150px; height: 0;
+            border-left: 75px solid transparent;
+            border-right: 75px solid transparent;
+            border-bottom: 60px solid var(--roof);
+        }
+
+        .window {
+            position: absolute; top: 35px; left: 20px;
+            width: 30px; height: 40px;
+            background: #ffdb58;
+            border: 3px solid #2d1b1a;
+            box-shadow: 0 0 20px #ffdb58;
+        }
+
+        /* --- Christmas Lights --- */
+        .lights-string {
+            position: absolute; bottom: -5px; left: -75px;
+            width: 150px; display: flex; justify-content: space-evenly;
+        }
+
+        .bulb {
+            width: 6px; height: 8px; border-radius: 50%;
+            animation: flicker var(--t) infinite alternate;
+        }
+        .red { background: #ff0000; box-shadow: 0 0 10px #ff0000; --t: 0.4s; }
+        .grn { background: #00ff00; box-shadow: 0 0 10px #00ff00; --t: 0.7s; }
+        .blu { background: #0000ff; box-shadow: 0 0 10px #0000ff; --t: 0.5s; }
+
+        @keyframes flicker { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+
+        /* --- Swaying Tree --- */
+        .tree {
+            width: 0; height: 0;
+            border-left: 40px solid transparent; border-right: 40px solid transparent;
+            border-bottom: 110px solid #062e19;
+            transform-origin: bottom center;
+            animation: sway 4s ease-in-out infinite;
+        }
+        @keyframes sway { 50% { transform: rotate(2deg); } }
+
+        /* --- Plane --- */
+        .plane-container {
+            position: absolute; top: 12%; left: -500px;
+            display: flex; align-items: center;
+            animation: fly 20s linear infinite; z-index: 10;
+        }
+        .banner {
+            background: white; color: red; padding: 10px 20px;
+            border: 2px dashed red; font-weight: bold; white-space: nowrap;
+        }
+
+        @keyframes fly { 0% { left: -600px; } 100% { left: 110%; } }
+
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+        #fireworks-canvas { z-index: 5; }
+        #snow-canvas { z-index: 20; }
+
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 100; display: flex; justify-content: center; align-items: center;
+        }
+        .btn { padding: 20px 40px; background: red; color: white; border: none; border-radius: 50px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay">
+        <button class="btn" onclick="startApp()">START THE CELEBRATION 🎄</button>
+    </div>
+
+    <audio id="music" loop><source src="alliwant.mp3" type="audio/mpeg"></audio>
+
+    <div class="plane-container">
+        <div class="banner">MERRY CHRISTMAS! 🎁</div>
+        <div style="font-size: 40px; transform: scaleX(-1);">✈️</div>
+    </div>
+
+    <canvas id="fireworks-canvas"></canvas>
+    <canvas id="snow-canvas"></canvas>
+
+    <div class="village">
+        <div class="tree"></div>
+        
+        <div class="house">
+            <div class="chimney">
+                <div class="smoke-wrap">
+                    <div class="smoke" style="animation-delay: 0s;"></div>
+                    <div class="smoke" style="animation-delay: 1s;"></div>
+                    <div class="smoke" style="animation-delay: 2s;"></div>
+                </div>
+            </div>
+            <div class="roof">
+                <div class="lights-string">
+                    <div class="bulb red"></div><div class="bulb grn"></div><div class="bulb blu"></div><div class="bulb red"></div><div class="bulb grn"></div>
+                </div>
+            </div>
+            <div class="window"></div>
+        </div>
+
+        <div class="tree" style="animation-delay: -2s; border-bottom-color: #084023;"></div>
+
+        <div class="house" style="transform: scale(0.85); background: #50302d;">
+            <div class="chimney">
+                <div class="smoke-wrap">
+                    <div class="smoke" style="animation-delay: 0.5s;"></div>
+                    <div class="smoke" style="animation-delay: 1.5s;"></div>
+                </div>
+            </div>
+            <div class="roof">
+                <div class="lights-string">
+                    <div class="bulb blu"></div><div class="bulb red"></div><div class="bulb grn"></div><div class="bulb blu"></div>
+                </div>
+            </div>
+            <div class="window" style="left: 45px;"></div>
+        </div>
+    </div>
+
+    <div class="snow-floor"></div>
+
+    <script>
+        const fCanvas = document.getElementById('fireworks-canvas');
+        const sCanvas = document.getElementById('snow-canvas');
+        const fCtx = fCanvas.getContext('2d');
+        const sCtx = sCanvas.getContext('2d');
+        let particles = [], flakes = [];
+
+        function resize() {
+            fCanvas.width = sCanvas.width = window.innerWidth;
+            fCanvas.height = sCanvas.height = window.innerHeight;
+        }
+        window.onresize = resize; resize();
+
+        function startApp() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('music').play();
+            for(let i=0; i<150; i++) flakes.push({x: Math.random()*sCanvas.width, y: Math.random()*sCanvas.height, r: Math.random()*3+1, s: Math.random()*2+1});
+            animate();
+        }
+
+        function animate() {
+            fCtx.fillStyle = 'rgba(2, 4, 8, 0.2)';
+            fCtx.fillRect(0, 0, fCanvas.width, fCanvas.height);
+            sCtx.clearRect(0,0, sCanvas.width, sCanvas.height);
+
+            // Fireworks
+            if(Math.random() < 0.04) {
+                let x = Math.random()*fCanvas.width, y = Math.random()*fCanvas.height/2;
+                let col = `hsl(${Math.random()*360}, 100%, 60%)`;
+                for(let i=0; i<30; i++) particles.push({x, y, c: col, v: {x:(Math.random()-0.5)*10, y:(Math.random()-0.5)*10}, a: 1});
+            }
+            particles.forEach((p, i) => {
+                p.x += p.v.x; p.y += p.v.y; p.a -= 0.015;
+                if(p.a <= 0) particles.splice(i, 1);
+                else { fCtx.globalAlpha = p.a; fCtx.fillStyle = p.c; fCtx.beginPath(); fCtx.arc(p.x, p.y, 2, 0, 7); fCtx.fill(); }
+            });
+
+            // Snow
+            sCtx.fillStyle = "white"; sCtx.beginPath();
+            flakes.forEach(f => {
+                f.y += f.s; f.x += Math.sin(f.y/30);
+                if(f.y > sCanvas.height) f.y = -10;
+                sCtx.moveTo(f.x, f.y); sCtx.arc(f.x, f.y, f.r, 0, 7);
+            });
+            sCtx.fill();
+            requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>
